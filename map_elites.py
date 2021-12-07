@@ -143,7 +143,15 @@ class EliteMatrix:
     def iter(self):
         for idx, x in np.ndenumerate(self.elites):
             if self.elites[idx] is not None:
-                yield self.elites[idx], idx
+                yield idx, self.elites[idx]
+    
+    def sorted_iter(self):
+        list_with_idx = list(np.ndenumerate(self.elites))
+        list_with_idx = [x for x in list_with_idx if x[1] is not None]
+        sorted_list = sorted(list_with_idx, key=lambda x: x[1]['validation_accuracy'] if x is not None else 0)
+        # print([self.elites[x[0]]['validation_accuracy'] for x in sorted_list[::-1]])
+        # print(self.get_performance())
+        return sorted_list[::-1]
     
     def update_metric(self, metric, idx, key='new_metric'):
         assert self.elites[idx] is not None

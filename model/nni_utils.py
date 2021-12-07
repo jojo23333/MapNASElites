@@ -68,7 +68,7 @@ class MapElitesStrategy(BaseStrategy):
 
         # TODO: code here manage samples
         submited_models = []
-        for elite, elite_property in self.elites.iter():
+        for elite_property, elite in self.elites.sorted_iter():
             _logger.debug('New model created. Waiting for resource. %s', str(elite))
             if self.metric_name in elite.keys():
                 _logger.info(f'Jumping over elite: {elite}')
@@ -77,13 +77,14 @@ class MapElitesStrategy(BaseStrategy):
             # Block if no availabe resources 
             while query_available_resources() <= 0:
                 wait_models(*[x[0] for x in submited_models])
-                for model, e, ep in submit_models:
+                for model, e, ep in submited_models:
                     if model.status == ModelStatus.Failed:
                         raise Exception
                     rew = model.metric
-                    self.elites.update_metric(rew, *ep, key=self.metric_name)
+                    self.elites.update_metric(rew, ep, key=self.metric_name)
                     _logger.info(f'Model metric received as reward: {rew}')
                     print(self.elites.get_performance(key=self.metric_name))
+                self.elites.save(f'./nasbench_gt_{self.metric_name}.npy')
                 # if budget_exhausted():
                 #     return
                 # time.sleep(self._polling_interval)
